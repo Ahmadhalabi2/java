@@ -40,18 +40,18 @@ function render() {
     del.textContent = "✕";
     del.setAttribute("aria-label", `Delete "${todo.text}"`);
 
-    // TODO 2: if the todo is done:
-    //         - tick the checkbox:  checkbox.checked = ...
-    //         - add the class "done" to the li
-
+    // TODO 2: إذا الـ todo منجز:
+    // نخلي الـ checkbox محدد، ونضيف كلاس "done" على الـ li
+    checkbox.checked = todo.done;
+    li.classList.toggle("done", todo.done);
 
     li.append(checkbox, span, del);
     list.append(li);
   }
 
-  // TODO 3: count the todos that are NOT done and show "2 left"
-  //         Hint: todos.filter(t => ...).length
-
+  // TODO 3: نعد كم todo ما اكتمل ونعرضه "2 left"
+  const left = todos.filter(t => !t.done).length;
+  remainingEl.textContent = `${left} left`;
 }
 
 
@@ -59,38 +59,46 @@ function render() {
 // EVENTS
 // ---------------------------------------------------------------
 
-// TODO 4: add a todo
+// TODO 4: إضافة todo جديد لما يضغط submit
 form.addEventListener("submit", (event) => {
-  event.preventDefault();
-  // const text = input.value.trim();   ← .trim() removes spaces at both ends
-  // if text is empty → return (do nothing)
-  // todos.push({ id: nextId, text: text, done: false });
-  // nextId++;
-  // clear the input, then render()
+  event.preventDefault(); // نمنع reload الصفحة
 
+  const text = input.value.trim(); // نشيل المسافات الزيادة
+  if (text === "") return;         // إذا فاضي نوقف، ما نضيف شي
+
+  todos.push({ id: nextId, text: text, done: false }); // نضيف أوبجكت جديد
+  nextId++;        // نزيد الـ id عشان كل todo يكون فريد
+  input.value = ""; // نفضي الـ input
+  render();
 });
 
 
-// TODO 5: toggle or delete. ONE listener on the whole list.
+// TODO 5: toggle أو delete — listener واحد على كل الـ list
 list.addEventListener("click", (event) => {
-  const li = event.target.closest("li"); // the <li> that contains whatever was clicked
+  const li = event.target.closest("li"); // نلاقي الـ li اللي اتضغط جواه
   if (!li) return;
-  const id = Number(li.dataset.id);        // data-* values are strings, so convert
+  const id = Number(li.dataset.id); // data-* دايماً string، نحوله رقم
 
-  // if event.target is the checkbox (event.target.type === "checkbox"):
-  //   find the todo with this id and flip its done:  todo.done = !todo.done
-  //
-  // if event.target has the class "delete" (event.target.classList.contains("delete")):
-  //   remove it: todos = todos.filter(t => t.id !== id)
-  //
-  // then render()
+  if (event.target.type === "checkbox") {
+    // ضغط على الـ checkbox → نقلب done
+    const todo = todos.find(t => t.id === id);
+    todo.done = !todo.done;
+  } else if (event.target.classList.contains("delete")) {
+    // ضغط على ✕ → نحذف التودو من المصفوفة
+    todos = todos.filter(t => t.id !== id);
+  } else {
+    return; // ضغط على النص أو مكان ثاني → ما نسوي شي
+  }
 
+  render();
 });
 
 
-// TODO 6: "Clear completed" keeps only the todos that are NOT done
-//         todos = todos.filter(...)   then render()
+// TODO 6: "Clear completed" → نبقي بس اللي مش done
+clearBtn.addEventListener("click", () => {
+  todos = todos.filter(t => !t.done);
+  render();
+});
 
 
-
-render(); // draw the starting list
+render(); // نرسم القائمة الأولية عند تحميل الصفحة
